@@ -100,10 +100,15 @@ func (p *watchProcessor) monitorPrefix(t *TemplateResource) {
 			time.Sleep(time.Second * 2)
 			continue
 		}
-		t.lastIndex = index
+
 		if err := t.process(); err != nil {
 			p.errChan <- err
+
+			// Prevent backend errors from consuming all resources.
+			time.Sleep(time.Second * 2)
+			continue // re-establish the watch at previous index
 		}
+		t.lastIndex = index
 	}
 }
 
